@@ -27,6 +27,8 @@ export default class DropzoneS3Uploader extends React.Component {
     onProgress: PropTypes.func,
     onFinish: PropTypes.func,
 
+    scrubFilename: PropTypes.func,
+
     // Passed to react-s3-uploader
     upload: PropTypes.object.isRequired,
 
@@ -45,7 +47,8 @@ export default class DropzoneS3Uploader extends React.Component {
     className: 'react-dropzone-s3-uploader',
     passChildrenProps: true,
     isImage: filename => filename && filename.match(/\.(jpeg|jpg|gif|png|svg)/i),
-    notDropzoneProps: ['onFinish', 's3Url', 'filename', 'host', 'upload', 'isImage', 'notDropzoneProps'],
+    scrubFilename: filename => filename.replace(/[^\w\d_\-.]+/ig, ''),
+    notDropzoneProps: ['scrubFilename', 'onFinish', 's3Url', 'filename', 'host', 'upload', 'isImage', 'notDropzoneProps'],
     style: {
       width: 200,
       height: 200,
@@ -122,6 +125,8 @@ export default class DropzoneS3Uploader extends React.Component {
 
   handleDrop = (files, rejectedFiles) => {
     this.setState({uploadedFiles: [], error: null, progress: null})
+    files = files.map(f => { f.filename = this.props.scrubFilename(f.filename); return f })
+
     const options = {
       files,
       ...this.state.uploaderOptions,
